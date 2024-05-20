@@ -39,8 +39,6 @@ from devices.devices import DeviceConn_MasterSlave, DevicesMap, Device, Channel,
 
 import numpy as np
 
-from analitics.analitics import Analitics
-
 class MainWindow(QMainWindow):
     signal_dump_wave     = pyqtSignal(object, object, object)
 
@@ -66,7 +64,7 @@ class MainWindow(QMainWindow):
         self.cwidget.conn_window.btn_connect.clicked.connect(lambda: self.connectDevice(self.cwidget.conn_window))
         self.cwidget.conn_window.btn_delete.clicked.connect(lambda: self.removeDevice(self.cwidget.conn_window))
             #start thread for board connection
-        self.board_thread.start() 
+        self.board_thread.start()
             #create thread, connections and object for DAQ processor
         self.worker = SpectraDAQ(self.devicesMap, True)
         self.worker.moveToThread(self.thr_daq)
