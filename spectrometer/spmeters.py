@@ -35,10 +35,13 @@ class ChanSpectrometer(Spectrometer):
     def __init__(self):
         super().__init__()
         #self.frameTime = 1.0 #frame time = 1 s by default
+        self.chanInfo = QLabel("Channel info: ")
+        self.chanInfo1 = QLabel("Channel info: ")
+
+
         self.setupUI()
 
         self.btn_replot_act.clicked.connect(self.replot)
-
         self.devicesMap = None
         self.useSum = True
 
@@ -51,6 +54,9 @@ class ChanSpectrometer(Spectrometer):
         self.layout_btns.addWidget(self.lbl_entries)
 
         self.layout.addLayout(self.layout_btns)
+        self.layout.addWidget(self.chanInfo)
+        self.layout.addWidget(self.chanInfo1)
+
         self.layout.addWidget(self.m_sp_plotter)
         self.setLayout(self.layout)
 
@@ -66,6 +72,8 @@ class ChanSpectrometer(Spectrometer):
         self.m_sp_plotter.clear()
 
         plotIndex = 0
+        nCountsPerSecondTotal = 0
+
         for device in self.devicesMap.values():
             for chan in device.channels:
                 if chan.isActive:
@@ -74,6 +82,16 @@ class ChanSpectrometer(Spectrometer):
                 plotIndex += 1
         self.lbl_entries.setText("{0} frames".format(entry))
         self.btn_replot_act.setEnabled(True)
+
+    @pyqtSlot(object, int)              #counts per second
+    def slot_chanCPF(self, chan_name, chan_CPF):
+        chan_CPS = chan_CPF / self.frameTime
+        print("Channel {0} CPS: {1}".format(chan_name, chan_CPS))
+        if (chan_name == "Channel0"):
+            self.chanInfo.setText("Info: channel {0} CPS: {1}".format(chan_name, chan_CPS))
+        elif (chan_name == "Channel1"):
+            self.chanInfo1.setText("Info: channel {0} CPS: {1}".format(chan_name, chan_CPS))
+
 
     def update_plot(self):
         self.m_sp_plotter.clear()
@@ -193,7 +211,6 @@ class SumSpectrometer(Spectrometer):
                 self.trendFramesX.append(entry)
                 try:
                     self.integrator.processData(counts)
-                    print(self.integrator.integral)
                 except:
                     self.trendFramesY.append(0)
                     self.trends.pl_trends.plot(self.trendFramesX, self.trendFramesY, pen=self.trends.pl_trends.pen)
@@ -210,6 +227,12 @@ class SumSpectrometer(Spectrometer):
 
         self.lbl_entries.setText("{0} frames".format(entry))
         self.btn_replot_act.setEnabled(True)
+
+    @pyqtSlot(object, int)          #counts per second
+    def slot_totCPF(self, tot_CPF):
+        tot_CPS = tot_CPF / self.frameTime
+        print("Total CPS: {0}".format(tot_CPS))
+        self.trends.tabwid.tab_TrendsParams.lbl_info.setText("Info: {0} CPS".format(tot_CPS))
 
     def update_plot(self):
         dataSum = 0

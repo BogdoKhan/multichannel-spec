@@ -376,10 +376,10 @@ class Device:
             self.ini_sets.endGroup()
         self.ini_sets.endGroup()
 
-        query = "BIAS1?"
-        self.board.transport.client.write(query)  
-        response = self.board.transport.client.read_raw().decode('utf-8').rstrip()
-        print(response)
+        # query = "BIAS1?"
+        # self.board.transport.client.write(query)  
+        # response = self.board.transport.client.read_raw().decode('utf-8').rstrip()
+        # print(response)
 
 
 #Basic widget for connection to single device

@@ -64,7 +64,7 @@ class PeakIntegrator(QObject):
         self.centroid = str(int(popt[1]))
         print("Center: {0}".format(self.centroid))
         self.integral = np.sum(self.fitData)
-        print("Integral: {0}".format(self.integral))
+        print("Integral: {0}".format(int(self.integral)))
 
 class Spectrometer(QWidget):
     name = 'Spectrometer'
@@ -73,7 +73,7 @@ class Spectrometer(QWidget):
         super().__init__()
         self.m_sp_plotter = PlSpectrometer()
 
-        #self.frameTime = 1.0 #frame time = 1 s by default
+        self.frameTime = 1.0 #frame time = 1 s by default
         
         self.btn_clear = QPushButton("Clear plot")
         self.btn_replot_act = QPushButton("Replot only active")
@@ -85,6 +85,10 @@ class Spectrometer(QWidget):
         self.useSum = True
 
         self.btn_clear.clicked.connect(self.m_sp_plotter.clear)
+
+    def setDaqTime(self, daqTime):
+        self.frameTime = daqTime/1000
+        print("Daq time: {0}".format(self.frameTime))
 
 class PlSpectrometer(PlotWidget):
     clr_cycle = ['#000', '#c77', '#0f0', '#00f','#054', '#d21', '#6c5', '#712', '#912', '#a3e', '#f21', '#840']
@@ -156,58 +160,61 @@ class TabWid(QTabWidget):
 class TrendsParams(QWidget):
     def __init__(self):
         super().__init__()
+        self.lbl_info = QLabel("Info:")
+
         self.setupUI()
     def setupUI(self):
         self.layout = QVBoxLayout()
-        self.groupBox_PeakStab = QtWidgets.QGroupBox()
-        #self.groupBox_PeakStab.setTitle("Peak stabilization")
-        self.gridLayout_PeakStab = QtWidgets.QGridLayout(self.groupBox_PeakStab)
+        self.layout.addWidget(self.lbl_info)
+        # self.groupBox_PeakStab = QtWidgets.QGroupBox()
+        # #self.groupBox_PeakStab.setTitle("Peak stabilization")
+        # self.gridLayout_PeakStab = QtWidgets.QGridLayout(self.groupBox_PeakStab)
 
-        #Peak in area
-        self.m_label_peak_stabil2 = QtWidgets.QLabel(self.groupBox_PeakStab)
-        self.m_label_peak_stabil2.setText("Peak in area")
-        self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil2, 1, 0, 1, 1)
-        self.m_spin_area_to_track = QtWidgets.QSpinBox(self.groupBox_PeakStab)
-        self.m_spin_area_to_track.setRange(1,3)
-        self.m_spin_area_to_track.setProperty("value", 2)
-        self.gridLayout_PeakStab.addWidget(self.m_spin_area_to_track, 1, 1, 1, 1)
+        # #Peak in area
+        # self.m_label_peak_stabil2 = QtWidgets.QLabel(self.groupBox_PeakStab)
+        # self.m_label_peak_stabil2.setText("Peak in area")
+        # self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil2, 1, 0, 1, 1)
+        # self.m_spin_area_to_track = QtWidgets.QSpinBox(self.groupBox_PeakStab)
+        # self.m_spin_area_to_track.setRange(1,3)
+        # self.m_spin_area_to_track.setProperty("value", 2)
+        # self.gridLayout_PeakStab.addWidget(self.m_spin_area_to_track, 1, 1, 1, 1)
 
-        #Step size
-        self.m_label_peak_stabil_step_size = QtWidgets.QLabel(self.groupBox_PeakStab)
-        self.m_label_peak_stabil_step_size.setText("Step size")
-        self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil_step_size, 2, 0, 1, 1)
-        self.m_spin_peak_stabil_step_size = QtWidgets.QSpinBox(self.groupBox_PeakStab)
-        self.m_spin_peak_stabil_step_size.setMinimum(1)
-        self.m_spin_peak_stabil_step_size.setMaximum(32)
-        self.gridLayout_PeakStab.addWidget(self.m_spin_peak_stabil_step_size, 2, 1, 1, 1)
+        # #Step size
+        # self.m_label_peak_stabil_step_size = QtWidgets.QLabel(self.groupBox_PeakStab)
+        # self.m_label_peak_stabil_step_size.setText("Step size")
+        # self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil_step_size, 2, 0, 1, 1)
+        # self.m_spin_peak_stabil_step_size = QtWidgets.QSpinBox(self.groupBox_PeakStab)
+        # self.m_spin_peak_stabil_step_size.setMinimum(1)
+        # self.m_spin_peak_stabil_step_size.setMaximum(32)
+        # self.gridLayout_PeakStab.addWidget(self.m_spin_peak_stabil_step_size, 2, 1, 1, 1)
 
-        #Avg frames for search
-        self.m_label_peak_stabil1 = QtWidgets.QLabel(self.groupBox_PeakStab)
-        self.m_label_peak_stabil1.setText("Avg frames for search")
-        self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil1, 1, 2, 1, 1)
-        self.m_spin_compensate_avg_frames = QtWidgets.QSpinBox(self.groupBox_PeakStab)
-        self.m_spin_compensate_avg_frames.setMaximum(600)
-        self.m_spin_compensate_avg_frames.setProperty("value", 60)
-        self.gridLayout_PeakStab.addWidget(self.m_spin_compensate_avg_frames, 1, 3, 1, 1)
+        # #Avg frames for search
+        # self.m_label_peak_stabil1 = QtWidgets.QLabel(self.groupBox_PeakStab)
+        # self.m_label_peak_stabil1.setText("Avg frames for search")
+        # self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil1, 1, 2, 1, 1)
+        # self.m_spin_compensate_avg_frames = QtWidgets.QSpinBox(self.groupBox_PeakStab)
+        # self.m_spin_compensate_avg_frames.setMaximum(600)
+        # self.m_spin_compensate_avg_frames.setProperty("value", 60)
+        # self.gridLayout_PeakStab.addWidget(self.m_spin_compensate_avg_frames, 1, 3, 1, 1)
 
-        #keep on channel
-        self.m_label_peak_stabil3 = QtWidgets.QLabel(self.groupBox_PeakStab)
-        self.m_label_peak_stabil3.setText("keep on channel")
-        self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil3, 2, 2, 1, 1)
-        self.m_spin_keep_channel = QtWidgets.QSpinBox(self.groupBox_PeakStab)
-        self.m_spin_keep_channel.setMaximum(1023)
-        self.m_spin_keep_channel.setProperty("value", 150)
-        self.gridLayout_PeakStab.addWidget(self.m_spin_keep_channel, 2, 3, 1, 1)
+        # #keep on channel
+        # self.m_label_peak_stabil3 = QtWidgets.QLabel(self.groupBox_PeakStab)
+        # self.m_label_peak_stabil3.setText("keep on channel")
+        # self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil3, 2, 2, 1, 1)
+        # self.m_spin_keep_channel = QtWidgets.QSpinBox(self.groupBox_PeakStab)
+        # self.m_spin_keep_channel.setMaximum(1023)
+        # self.m_spin_keep_channel.setProperty("value", 150)
+        # self.gridLayout_PeakStab.addWidget(self.m_spin_keep_channel, 2, 3, 1, 1)
 
-        #Peak found on channel
-        self.m_label_peak_stabil4 = QtWidgets.QLabel(self.groupBox_PeakStab)
-        self.m_label_peak_stabil4.setText("Peak found on channel")
-        self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil4, 0, 1, 1, 1)
-        self.m_label_peak_stabil_channel = QtWidgets.QLabel(self.groupBox_PeakStab)
-        self.m_label_peak_stabil_channel.setText("0.00")
-        self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil_channel, 0, 2, 1, 1)
+        # #Peak found on channel
+        # self.m_label_peak_stabil4 = QtWidgets.QLabel(self.groupBox_PeakStab)
+        # self.m_label_peak_stabil4.setText("Peak found on channel")
+        # self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil4, 0, 1, 1, 1)
+        # self.m_label_peak_stabil_channel = QtWidgets.QLabel(self.groupBox_PeakStab)
+        # self.m_label_peak_stabil_channel.setText("0.00")
+        # self.gridLayout_PeakStab.addWidget(self.m_label_peak_stabil_channel, 0, 2, 1, 1)
 
-        self.layout.addWidget(self.groupBox_PeakStab)
+        # self.layout.addWidget(self.groupBox_PeakStab)
         self.setLayout(self.layout)
         self.setMaximumHeight(400)
 
@@ -288,12 +295,15 @@ class PlTrend(PlotWidget):
 class SpectraDAQ(QObject):
     finished = pyqtSignal()
     signal_dataReady = pyqtSignal(object, int)
+    signal_ChanCPFReady = pyqtSignal(object, int)
+    signal_totCPFReady = pyqtSignal(int)
     nEntries = 10
     def __init__(self, devicesMap, isCont):
         super().__init__()
         self.devicesMap = devicesMap
         self.isContinuous = isCont
         self.setStop = False
+        self.daqTime = 1.0
 
     @pyqtSlot()
     def run(self):
@@ -301,8 +311,6 @@ class SpectraDAQ(QObject):
         self.setStop = False
         print("Data acquisition finished")
         self.finished.emit()
-
-
 
     def get_spectrum(self, nEntries):
         data = dict()
@@ -323,12 +331,12 @@ class SpectraDAQ(QObject):
                     dataChunk = data[device.ip][chan*1027:(chan+1)*1027-3]
                     chanIntegral = np.sum(dataChunk)    #calculate number of events per frame for each channel
                     nCountsPerSecondTotal += chanIntegral
-                    print("Channel {0} CPF: {1}".format(device.channels[chan].name, chanIntegral))
+                    self.signal_ChanCPFReady.emit(device.channels[chan].name, chanIntegral)
                     if self.isContinuous:
                         device.channels[chan].data = np.add(device.channels[chan].data, dataChunk)
                     else:
                         device.channels[chan].data = dataChunk
-            print("Total CPF: {0}".format(nCountsPerSecondTotal))
+            self.signal_totCPFReady.emit(nCountsPerSecondTotal)
             self.signal_dataReady.emit(self.devicesMap, (entry+1))
 
             if self.setStop:                          
