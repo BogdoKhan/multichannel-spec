@@ -73,12 +73,18 @@ class MainWindow(QMainWindow):
 
         self.worker.signal_dataReady.connect(lambda devicesMap, entry, useSum=True: self.m_sumSpectrometer.slot_on_spec_update(devicesMap, entry, useSum))
         self.worker.signal_dataReady.connect(lambda devicesMap, entry, useSum=False: self.m_specWidget.slot_on_spec_update(devicesMap, entry, useSum))
+
+        self.worker.signal_ChanCPFReady.connect(lambda chan_name, chan_CPF: self.m_specWidget.slot_chanCPF(chan_name, chan_CPF))
+        self.worker.signal_totCPFReady.connect(lambda chan_CPF: self.m_sumSpectrometer.slot_totCPF(chan_CPF))
+
         self.worker.finished.connect(self.thr_daq.terminate)
 
         self.thr_daq.started.connect(self.worker.run)
         self.daqwidget.btn_get_single_spectrum.clicked.connect(self.get_single_spectrum)     
         self.daqwidget.btn_get_full_spectrum.clicked.connect(self.get_series_of_spectra)    
         self.daqwidget.btn_get_full_spectrum.clicked.connect(self.m_sumSpectrometer.clear_data)     
+
+        self.daqwidget.btn_updAcqTime.clicked.connect(self.sendDaqTimeToSpectrometer)
  
         self.daqwidget.btn_interrupt.clicked.connect(self.setStop)     
             #create connections for spectrometer widgets
@@ -99,8 +105,17 @@ class MainWindow(QMainWindow):
         self.thr_daq.start()
 
     def get_series_of_spectra(self):    #shoot many frames of spectrum during the data acquisition time
+        self.sendDaqTimeToSpectrometer()
+        self.daqwidget.setAcqTime()
+        
         self.worker.nEntries = self.daqwidget.nFrames
         self.thr_daq.start()
+
+    def sendDaqTimeToSpectrometer(self):        #send frame time for calc counts per second for each frame
+        daqTime = float(self.daqwidget.lne_single_daq_time.text())
+        self.m_specWidget.setDaqTime(daqTime)
+        self.m_sumSpectrometer.setDaqTime(daqTime)
+
         #ocsope connections for wave dumping
     def slot_dump_wave_done(self):
         self.daq_cont['dumping_wave'] = False 
