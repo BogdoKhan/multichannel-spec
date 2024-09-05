@@ -39,7 +39,7 @@ class ConnectionWidget(QWidget):
         self.conn_window = DeviceConn_MasterSlave()
         self.tbl_devices_list = DevicesMap()        #contains info about devices
         self.chk_use_master = QCheckBox("Use master-slave configuration")
-        self.chk_use_master.setChecked(True)
+        self.chk_use_master.setChecked(False)
 
         #self.btn_get_spectrum = QPushButton("Get spectrum")
 
@@ -182,8 +182,8 @@ class ConsoleWidget(QWidget):
         self.lne_query.setText("")
         self.lbl_query = QLabel("SCPI query")
         self.btn_query = QPushButton("Send query")
-        self.btn_response = QPushButton("Read response")
-        self.btn_plot = QPushButton("Plot data")
+        #self.btn_response = QPushButton("Read response")
+        #self.btn_plot = QPushButton("Plot data")
 
         self.m_plotData = PlotWidget()
         self.m_plotData.setMinimumHeight(350)
@@ -199,10 +199,10 @@ class ConsoleWidget(QWidget):
         layout.addWidget(self.lbl_deviceIP, 5, 1, 1, 1)
 
         layout.addWidget(self.lbl_query, 6, 0, 1, 1)
-        layout.addWidget(self.lne_query, 6, 1, 1, -1)
-        layout.addWidget(self.btn_query, 7, 1, 1, 1)
-        layout.addWidget(self.btn_response, 7, 2, 1, 1)
-        layout.addWidget(self.btn_plot, 7, 3, 1, 1)
+        layout.addWidget(self.lne_query, 6, 1, 1, 2)
+        layout.addWidget(self.btn_query, 6, 3, 1, -1)
+        #layout.addWidget(self.btn_response, 7, 2, 1, 1)
+        #layout.addWidget(self.btn_plot, 7, 3, 1, 1)
 
         layout.addWidget(self.m_plotData, 8, 0, -1, -1)
         layout.setVerticalSpacing(0)
