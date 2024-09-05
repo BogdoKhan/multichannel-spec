@@ -32,7 +32,7 @@ import oscilloscope.oscilloscope as oscope
 import spectrometer.spmeters as spmeters
 
 from spectrometer.spmeter_base import SpectraDAQ
-from widgets.widgets import ConnectionWidget, DaqWidget
+from widgets.widgets import ConnectionWidget, DaqWidget, ConsoleWidget
 
 from transport import api, api_param
 from devices.devices import DeviceConn_MasterSlave, DevicesMap, Device, Channel, ChannelWindow, BoardsManager, BoardWindow
@@ -137,6 +137,7 @@ class MainWindow(QMainWindow):
         self.oscope_widget = oscope.OscilloscopeW()
         self.m_specWidget = spmeters.ChanSpectrometer()
         self.m_sumSpectrometer = spmeters.SumSpectrometer()
+        self.console_widget = ConsoleWidget()
         
         toolbar = QToolBar("Main toolbar")
         self.addToolBar(toolbar)
@@ -148,6 +149,8 @@ class MainWindow(QMainWindow):
         tabs_lyout.addTab(self.oscope_widget, "Oscilloscope")
         tabs_lyout.addTab(self.m_specWidget, "Spectrometer")
         tabs_lyout.addTab(self.m_sumSpectrometer, "SMeter (SUM)")
+        tabs_lyout.addTab(self.console_widget, "SCPI console")
+
 
         hlayout.addWidget(tabs_lyout)
         centerwidget = QWidget()
@@ -161,39 +164,44 @@ class MainWindow(QMainWindow):
         self.settings["ip"] = window.lne_ip_edit.text()
         self.transport_param["ip"] = self.settings["ip"]
         self.transport_param["port"] = self.settings["port"]
-        self.board.connect(self.settings)
-        self.board.transport.client.timeout = 20000     #large timeout for SCPI commands
-
-        #get uptime and connection status
-        uptime_seconds = self.board.transport.transaction([api_param.SCPI_GET_UPTIME], True)[1]
-        window.setValuesAfterConnection(uptime_seconds, self.board.check_connect())     #update data in connection widget
-
-        #if device was not connected previously, add it to the devices table,
-        #otherwise update information in devices table
-        if not self.settings["ip"] in self.devicesMap:
-            self.cwidget.setupData_onConnected(self.board.check_connect(), uptime_seconds, self.devicesMap, False)
+        try:
+            self.board.connect(self.settings)
+            self.board.transport.client.timeout = 20000     #large timeout for SCPI commands
+            #get uptime and connection status
+            uptime_seconds = self.board.transport.transaction([api_param.SCPI_GET_UPTIME], True)[1]
+        except:
+            print("Cannot establish connection to device!")
         else:
-            self.cwidget.setupData_onConnected(self.board.check_connect(), uptime_seconds, self.devicesMap, True)
+            window.setValuesAfterConnection(uptime_seconds, self.board.check_connect())     #update data in connection widget
 
-        isConnected = self.board.check_connect()
-        print("Connection:", isConnected)
+            #if device was not connected previously, add it to the devices table,
+            #otherwise update information in devices table
+            if not self.settings["ip"] in self.devicesMap:
+                self.cwidget.setupData_onConnected(self.board.check_connect(), uptime_seconds, self.devicesMap, False)
+            else:
+                self.cwidget.setupData_onConnected(self.board.check_connect(), uptime_seconds, self.devicesMap, True)
 
-        if window.isTableDevices and isConnected:   #if current connection manager is with TableDevices and device is connected
-            #fill table with connected devices
-            #assign board in devices table to currently connected device
-            device = self.devicesMap[self.settings["ip"]]
-            if device.board == None:
-                device.board = self.board
-                device.board.transport.client.write('sp:channels?')
-                numChannels = int(device.board.transport.client.read_raw().decode('utf-8').rstrip())
-                device.nChannels = numChannels
-                device.channels = [None] * numChannels
+            isConnected = self.board.check_connect()
+            print("Connection:", isConnected)
 
-            self.buildBoardTab(device)              #create tab widget with channels for board
+            if window.isTableDevices and isConnected:   #if current connection manager is with TableDevices and device is connected
+                #fill table with connected devices
+                #assign board in devices table to currently connected device
+                device = self.devicesMap[self.settings["ip"]]
+                if device.board == None:
+                    device.board = self.board
+                    device.board.transport.client.write('sp:channels?')
+                    numChannels = int(device.board.transport.client.read_raw().decode('utf-8').rstrip())
+                    device.nChannels = numChannels
+                    device.channels = [None] * numChannels
 
-            for deviceIP in self.devicesMap:
-                self.devicesMap[deviceIP].board.transport.client.write('*IDN?')
-                print("{0}: {1}".format(deviceIP, self.devicesMap[deviceIP].board.transport.client.read_raw().decode('utf-8').rstrip()))
+                self.buildBoardTab(device)              #create tab widget with channels for board
+
+                self.console_widget.lbl_deviceIP.setText(self.settings["ip"])   #update device IP in console tab
+
+                for deviceIP in self.devicesMap:
+                    self.devicesMap[deviceIP].board.transport.client.write('*IDN?')
+                    print("{0}: {1}".format(deviceIP, self.devicesMap[deviceIP].board.transport.client.read_raw().decode('utf-8').rstrip()))
 
     def removeDevice(self, window):             #removes device from table
         for i in range(self.boards_mgr.count()):
