@@ -20,6 +20,11 @@ from devices.devices import DeviceConn_MasterSlave, DevicesMap, Device, Channel,
 
 from pyqtgraph import PlotWidget
 
+import numpy as np
+import pyqtgraph as pg
+
+
+
 
 class ConnectionWidget(QWidget):
     def __init__(self):
@@ -155,9 +160,14 @@ class DaqWidget(QWidget):
         self.lbl_full_daq_frames.setText(str(self.nFrames))
 
 class ConsoleWidget(QWidget):
-    def __init__(self):
+    def __init__(self, devicesMap):
         super().__init__()
+        self.devicesMap = devicesMap
+
         self.setupUI()
+        self.btn_query.clicked.connect(self.getIDN)
+
+
 
     def setupUI(self):
         layout = QGridLayout()
@@ -200,3 +210,28 @@ class ConsoleWidget(QWidget):
         self.setLayout(layout)
         self.setMinimumHeight(600)
         self.setMinimumWidth(450)
+
+    def getIDN(self):
+        if(len(self.devicesMap.values()) > 0):
+            query = self.lne_query.text()
+            device = self.devicesMap[self.lbl_deviceIP.text()]
+            try:
+                self.txt_output.setText(">> {0}".format(query))
+                device.board.transport.client.write(query)
+            except:
+                self.txt_output.setText("<< {0}".format("Wrong query or unexpected format"))
+            else:
+                if (query.find("SPEC") > -1 or query.find("WAVE") > -1):
+                    response = ("{0}".format(device.board.transport.client.read_binary_values(datatype='i', is_big_endian=True)))
+
+                    values = [int(i) for i in response[1:-1].split(',')]
+                    yvals = np.array(values)
+                    xvals = np.array(range(0, len(yvals)))
+                    self.m_plotData.clear()
+                    self.m_plotData.plot(xvals, yvals, pen = pg.mkPen('y', width=2))
+                else:
+                    response = ("{0}".format(device.board.transport.client.read_raw().decode('utf-8').rstrip()))
+
+                self.txt_output.setText("<< {0}".format(response))
+        else:
+            print("Devices map is empty")

@@ -137,7 +137,7 @@ class MainWindow(QMainWindow):
         self.oscope_widget = oscope.OscilloscopeW()
         self.m_specWidget = spmeters.ChanSpectrometer()
         self.m_sumSpectrometer = spmeters.SumSpectrometer()
-        self.console_widget = ConsoleWidget()
+        self.console_widget = ConsoleWidget(self.devicesMap)
         
         toolbar = QToolBar("Main toolbar")
         self.addToolBar(toolbar)

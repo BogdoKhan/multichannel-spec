@@ -494,12 +494,8 @@ class DevicesMap(QTableWidget):
         #only one master can be connected
         if devProps.role == "Master":
             for k in self.devicesMap:
-                prop = Device()
-                prop.ip = k
-                prop.role = "Slave"
-                prop.status = self.devicesMap[k].status
-                prop.uptime = self.devicesMap[k].uptime
-                self.devicesMap.update({k: prop})
+                self.devicesMap[k].role = "Slave"
+            self.devicesMap[ip].role = "Master"
         self.devicesMap.update({ip: devProps})
         self.updUI()
 
