@@ -8,7 +8,8 @@
 from PyQt5.QtWidgets import (
     QLabel,QPushButton, QWidget, 
     QVBoxLayout, QHBoxLayout, 
-    QTabWidget, QToolBar, QCheckBox, QGridLayout, QLineEdit
+    QTabWidget, QToolBar, QCheckBox, QGridLayout, QLineEdit,
+    QTextEdit, QSpacerItem, QSizePolicy
 )
 from PyQt5.QtCore import (
     pyqtSignal, Qt, pyqtSlot
@@ -16,6 +17,8 @@ from PyQt5.QtCore import (
 
 from transport import api, api_param
 from devices.devices import DeviceConn_MasterSlave, DevicesMap, Device, Channel, ChannelWindow, BoardsManager, BoardWindow
+
+from pyqtgraph import PlotWidget
 
 
 class ConnectionWidget(QWidget):
@@ -150,3 +153,50 @@ class DaqWidget(QWidget):
     def recalcFrames(self):
         self.nFrames = int(float(self.lne_full_daq_time.text())*1000/float(self.lne_single_daq_time.text()))
         self.lbl_full_daq_frames.setText(str(self.nFrames))
+
+class ConsoleWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setupUI()
+
+    def setupUI(self):
+        layout = QGridLayout()
+
+        self.txt_output = QTextEdit()
+        self.txt_output.setMinimumHeight(300)
+        self.txt_output.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.lbl_help = QLabel("To change the connected device, click Connect on leftmost Devices area")
+
+        self.lne_query = QLineEdit()
+        self.lne_query.setText("")
+        self.lbl_query = QLabel("SCPI query")
+        self.btn_query = QPushButton("Send query")
+        self.btn_response = QPushButton("Read response")
+        self.btn_plot = QPushButton("Plot data")
+
+        self.m_plotData = PlotWidget()
+        self.m_plotData.setMinimumHeight(350)
+        self.m_plotData.setMinimumWidth(450)
+
+        self.lbl_currentDevice = QLabel("Current device IP:")
+        self.lbl_deviceIP = QLabel("0.0.0.0")
+
+        layout.addWidget(self.txt_output, 0, 0, 3, -1)
+
+        layout.addWidget(self.lbl_help, 4, 0, 1, -1)
+        layout.addWidget(self.lbl_currentDevice, 5, 0, 1, 1)
+        layout.addWidget(self.lbl_deviceIP, 5, 1, 1, 1)
+
+        layout.addWidget(self.lbl_query, 6, 0, 1, 1)
+        layout.addWidget(self.lne_query, 6, 1, 1, -1)
+        layout.addWidget(self.btn_query, 7, 1, 1, 1)
+        layout.addWidget(self.btn_response, 7, 2, 1, 1)
+        layout.addWidget(self.btn_plot, 7, 3, 1, 1)
+
+        layout.addWidget(self.m_plotData, 8, 0, -1, -1)
+        layout.setVerticalSpacing(0)
+
+        self.setLayout(layout)
+        self.setMinimumHeight(600)
+        self.setMinimumWidth(450)
