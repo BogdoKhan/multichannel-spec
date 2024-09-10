@@ -23,9 +23,6 @@ from pyqtgraph import PlotWidget
 import numpy as np
 import pyqtgraph as pg
 
-
-
-
 class ConnectionWidget(QWidget):
     def __init__(self):
         super().__init__()
@@ -168,7 +165,6 @@ class ConsoleWidget(QWidget):
         self.btn_query.clicked.connect(self.getIDN)
 
 
-
     def setupUI(self):
         layout = QGridLayout()
 
@@ -182,6 +178,7 @@ class ConsoleWidget(QWidget):
         self.lne_query.setText("")
         self.lbl_query = QLabel("SCPI query")
         self.btn_query = QPushButton("Send query")
+
         #self.btn_response = QPushButton("Read response")
         #self.btn_plot = QPushButton("Plot data")
 
@@ -199,10 +196,12 @@ class ConsoleWidget(QWidget):
         layout.addWidget(self.lbl_deviceIP, 5, 1, 1, 1)
 
         layout.addWidget(self.lbl_query, 6, 0, 1, 1)
+
         layout.addWidget(self.lne_query, 6, 1, 1, 2)
         layout.addWidget(self.btn_query, 6, 3, 1, -1)
         #layout.addWidget(self.btn_response, 7, 2, 1, 1)
         #layout.addWidget(self.btn_plot, 7, 3, 1, 1)
+
 
         layout.addWidget(self.m_plotData, 8, 0, -1, -1)
         layout.setVerticalSpacing(0)
@@ -235,3 +234,4 @@ class ConsoleWidget(QWidget):
                 self.txt_output.setText("<< {0}".format(response))
         else:
             print("Devices map is empty")
+
