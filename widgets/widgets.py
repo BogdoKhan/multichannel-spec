@@ -20,6 +20,8 @@ from devices.devices import DeviceConn_MasterSlave, DevicesMap, Device, Channel,
 
 from pyqtgraph import PlotWidget
 
+import numpy as np
+import pyqtgraph as pg
 
 class ConnectionWidget(QWidget):
     def __init__(self):
@@ -34,7 +36,7 @@ class ConnectionWidget(QWidget):
         self.conn_window = DeviceConn_MasterSlave()
         self.tbl_devices_list = DevicesMap()        #contains info about devices
         self.chk_use_master = QCheckBox("Use master-slave configuration")
-        self.chk_use_master.setChecked(True)
+        self.chk_use_master.setChecked(False)
 
         #self.btn_get_spectrum = QPushButton("Get spectrum")
 
@@ -155,9 +157,13 @@ class DaqWidget(QWidget):
         self.lbl_full_daq_frames.setText(str(self.nFrames))
 
 class ConsoleWidget(QWidget):
-    def __init__(self):
+    def __init__(self, devicesMap):
         super().__init__()
+        self.devicesMap = devicesMap
+
         self.setupUI()
+        self.btn_query.clicked.connect(self.getIDN)
+
 
     def setupUI(self):
         layout = QGridLayout()
@@ -172,8 +178,9 @@ class ConsoleWidget(QWidget):
         self.lne_query.setText("")
         self.lbl_query = QLabel("SCPI query")
         self.btn_query = QPushButton("Send query")
-        self.btn_response = QPushButton("Read response")
-        self.btn_plot = QPushButton("Plot data")
+
+        #self.btn_response = QPushButton("Read response")
+        #self.btn_plot = QPushButton("Plot data")
 
         self.m_plotData = PlotWidget()
         self.m_plotData.setMinimumHeight(350)
@@ -189,10 +196,12 @@ class ConsoleWidget(QWidget):
         layout.addWidget(self.lbl_deviceIP, 5, 1, 1, 1)
 
         layout.addWidget(self.lbl_query, 6, 0, 1, 1)
-        layout.addWidget(self.lne_query, 6, 1, 1, -1)
-        layout.addWidget(self.btn_query, 7, 1, 1, 1)
-        layout.addWidget(self.btn_response, 7, 2, 1, 1)
-        layout.addWidget(self.btn_plot, 7, 3, 1, 1)
+
+        layout.addWidget(self.lne_query, 6, 1, 1, 2)
+        layout.addWidget(self.btn_query, 6, 3, 1, -1)
+        #layout.addWidget(self.btn_response, 7, 2, 1, 1)
+        #layout.addWidget(self.btn_plot, 7, 3, 1, 1)
+
 
         layout.addWidget(self.m_plotData, 8, 0, -1, -1)
         layout.setVerticalSpacing(0)
@@ -200,3 +209,29 @@ class ConsoleWidget(QWidget):
         self.setLayout(layout)
         self.setMinimumHeight(600)
         self.setMinimumWidth(450)
+
+    def getIDN(self):
+        if(len(self.devicesMap.values()) > 0):
+            query = self.lne_query.text()
+            device = self.devicesMap[self.lbl_deviceIP.text()]
+            try:
+                self.txt_output.setText(">> {0}".format(query))
+                device.board.transport.client.write(query)
+            except:
+                self.txt_output.setText("<< {0}".format("Wrong query or unexpected format"))
+            else:
+                if (query.find("SPEC") > -1 or query.find("WAVE") > -1):
+                    response = ("{0}".format(device.board.transport.client.read_binary_values(datatype='i', is_big_endian=True)))
+
+                    values = [int(i) for i in response[1:-1].split(',')]
+                    yvals = np.array(values)
+                    xvals = np.array(range(0, len(yvals)))
+                    self.m_plotData.clear()
+                    self.m_plotData.plot(xvals, yvals, pen = pg.mkPen('y', width=2))
+                else:
+                    response = ("{0}".format(device.board.transport.client.read_raw().decode('utf-8').rstrip()))
+
+                self.txt_output.setText("<< {0}".format(response))
+        else:
+            print("Devices map is empty")
+
