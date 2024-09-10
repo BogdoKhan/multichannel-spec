@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\dnwdc\OneDrive\Рабочий стол\!3_aspirant\Работа\RedPitaya_ServiceApp\multichannel-spec\oscilloscope\forms/waveform.ui'
+# Form implementation generated from reading ui file 'C:\Users\dkc1\Desktop\test-spec\test-spec\oscilloscope\forms/waveform.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
